@@ -1,40 +1,82 @@
-# ArcRouter — Intelligent LLM Routing
+<div align="center">
 
-Route any prompt to the best AI model. 345+ models, 24 topic categories, benchmark-verified scores.
+# ArcRouter
+
+**Intelligent LLM routing. One API, 345+ models, always the best one.**
+
+Route any prompt to the optimal AI model based on topic, complexity, and budget — with benchmark-verified selection across OpenAI, Anthropic, Google, DeepSeek, and xAI.
+
+[![Website](https://img.shields.io/badge/arcrouter.com-visit-blue?style=flat-square)](https://arcrouter.com)
+[![Docs](https://img.shields.io/badge/docs-arcrouter.com%2Fdocs-green?style=flat-square)](https://arcrouter.com/docs)
+[![npm @arcrouter/sdk](https://img.shields.io/npm/v/@arcrouter/sdk?label=%40arcrouter%2Fsdk&style=flat-square&color=cb3837)](https://www.npmjs.com/package/@arcrouter/sdk)
+[![npm arcrouter-classifier](https://img.shields.io/npm/v/arcrouter-classifier?label=arcrouter-classifier&style=flat-square&color=cb3837)](https://www.npmjs.com/package/arcrouter-classifier)
+[![License: MIT](https://img.shields.io/badge/license-MIT-yellow?style=flat-square)](https://opensource.org/licenses/MIT)
+
+</div>
+
+---
+
+## Why ArcRouter?
+
+LLMs vary wildly in quality by task. GPT-4o dominates coding, Gemini excels at long context, DeepSeek leads math reasoning. ArcRouter picks the right model for every prompt — automatically.
+
+- **Hybrid semantic routing** — lexical prefilter + benchmark shortlist + embedding reranking
+- **24 topic categories** with subcategory detection (code/frontend, math/calculus, science/physics, ...)
+- **4 complexity tiers** — SIMPLE, MEDIUM, COMPLEX, REASONING
+- **5 direct providers** — OpenAI, Anthropic, Google, DeepSeek, xAI (with OpenRouter fallback)
+- **Council mode** — query 3-7 models in parallel, return the consensus answer
+- **x402 micropayments** — pay per request with USDC on Base, no API key needed
 
 ## Quick Start
 
 ```bash
 # TypeScript SDK
-npm install arcrouter
+pnpm add @arcrouter/sdk
 
 # MCP server for Claude Code / Cursor / Cline
 claude mcp add arcrouter --transport http https://api.arcrouter.com/mcp
 
-# Direct API
+# Direct API (no auth required for free tier)
 curl https://api.arcrouter.com/v1/chat/completions \
   -H "Content-Type: application/json" \
   -d '{"messages":[{"role":"user","content":"Hello"}],"budget":"auto"}'
 ```
 
+```typescript
+import { ArcRouter } from '@arcrouter/sdk';
+
+const arc = new ArcRouter();
+const res = await arc.chat('Explain quantum entanglement');
+
+console.log(res.content);           // The answer
+console.log(res.routing.model);     // e.g. "gemini-2.0-flash"
+console.log(res.routing.topic);     // "science/physics"
+console.log(res.routing.complexity);// "MEDIUM"
+```
+
+## Ecosystem
+
+| Package | Description | Install |
+|---------|-------------|---------|
+| [`@arcrouter/sdk`](https://github.com/ArcRouterAI/arcrouter-sdk) | TypeScript SDK — routing, council, streaming, workflows, x402 | `pnpm add @arcrouter/sdk` |
+| [`arcrouter-classifier`](https://github.com/ArcRouterAI/arcrouter) | Open-source prompt classifier — topic, complexity, compression | `pnpm add arcrouter-classifier` |
+| [`arcrouter-mcp`](https://github.com/ArcRouterAI/arcrouter-mcp) | MCP server for AI coding tools | `claude mcp add arcrouter ...` |
+| [awesome-arcrouter](https://github.com/ArcRouterAI/awesome-arcrouter) | Community integrations and resources | — |
+
 ## How It Works
 
-1. **Classify** — topic detection (code/math/science/writing/reasoning) + complexity scoring (SIMPLE/MEDIUM/COMPLEX/REASONING)
-2. **Score** — 345+ models ranked by quality benchmarks (LiveBench, LiveCodeBench, HuggingFace)
-3. **Route** — hybrid semantic routing: keyword prefilter → benchmark shortlist → embedding reranking
-4. **Respond** — direct provider calls (OpenAI/Anthropic/Google/DeepSeek/xAI) with failover
+```
+Prompt → Classify (topic + complexity) → Score 345+ models → Semantic rerank → Route to best model
+```
 
-## Repos
-
-| Repo | Description |
-|------|-------------|
-| [arcrouter](https://github.com/ArcRouterAI/arcrouter) | Open-source prompt classifier — topic detection, complexity scoring, lossless compression |
-| [arcrouter-sdk](https://github.com/ArcRouterAI/arcrouter-sdk) | TypeScript SDK — smart routing, council mode, x402 micropayments, workflow budgets |
-| [arcrouter-mcp](https://github.com/ArcRouterAI/arcrouter-mcp) | MCP server — use ArcRouter from Claude Code, Cursor, Cline |
-| [awesome-arcrouter](https://github.com/ArcRouterAI/awesome-arcrouter) | Community integrations and ecosystem links |
+1. **Classify** — detect topic (code/math/science/writing/reasoning) and complexity (SIMPLE → REASONING)
+2. **Score** — rank models using real benchmarks (LiveBench, LiveCodeBench, HumanEval, GPQA)
+3. **Route** — hybrid semantic routing narrows to the optimal model for the task
+4. **Respond** — direct provider call with automatic failover and circuit breaking
 
 ## Links
 
-- **API:** https://api.arcrouter.com
-- **Docs:** https://arcrouter.com/docs
-- **Status:** https://arcrouter.com
+- **Website:** [arcrouter.com](https://arcrouter.com)
+- **API:** [api.arcrouter.com](https://api.arcrouter.com)
+- **Docs:** [arcrouter.com/docs](https://arcrouter.com/docs)
+- **npm:** [@arcrouter/sdk](https://www.npmjs.com/package/@arcrouter/sdk) · [arcrouter-classifier](https://www.npmjs.com/package/arcrouter-classifier)
