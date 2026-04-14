@@ -20,12 +20,46 @@ Route any prompt to the optimal AI model based on topic, complexity, and budget 
 
 LLMs vary wildly in quality by task. GPT-4o dominates coding, Gemini excels at long context, DeepSeek leads math reasoning. ArcRouter picks the right model for every prompt — automatically.
 
+### Smart Routing
 - **Hybrid semantic routing** — lexical prefilter + benchmark shortlist + embedding reranking
 - **24 topic categories** with subcategory detection (code/frontend, math/calculus, science/physics, ...)
 - **4 complexity tiers** — SIMPLE, MEDIUM, COMPLEX, REASONING
-- **5 direct providers** — OpenAI, Anthropic, Google, DeepSeek, xAI (with OpenRouter fallback)
+- **Agentic detection** — auto-detects tool-use prompts, routes to tool-capable models
+- **345+ models scored** with real benchmarks (LiveBench, LiveCodeBench, HumanEval, GPQA)
+
+### Multi-Model Verification
 - **Council mode** — query 3-7 models in parallel, return the consensus answer
+- **Semantic grouping** — embedding similarity (paid) or Jaccard overlap (free) to find agreement
+- **Chairman escalation** — when models disagree, a synthesis model resolves conflicts
+
+### Agent Workflow Support
+- **X-Agent-Step header** — hint complexity per step (`simple-action`, `code-generation`, `reasoning`, `verification`)
+- **Workflow budgets** — set a total USD budget per workflow, auto-downgrade at 60/80/95% spend
+- **Session model pinning** — lock a model for a conversation via `session_id`
+- **Workflow telemetry** — `GET /v1/workflow/{session_id}/usage` for spend, latency, tier distribution
+
+### Cost Optimization
+- **Prompt compression** — lossless L1 (dedup) + L2 (whitespace) + L5 (JSON compaction), 10-15% token savings
+- **5 direct providers** — OpenAI, Anthropic, Google, DeepSeek, xAI (no middleman markup)
+- **OpenRouter fallback** — 300+ long-tail models when direct access isn't available
+- **Max cost filtering** — `max_cost` per request, graceful downgrade to cheapest viable model
+- **Routing metadata** — every response includes `estimated_cost_usd`, `savings_vs_gpt4_pct`, `models_considered`
+
+### Reliability
+- **Circuit breaker + fallback chains** — auto-retry with up to 3 fallback models on failure
+- **Context-length filtering** — excludes models with insufficient context window
+- **Model exclusion** — `exclude_models` to block specific models per request
+
+### Payments
 - **x402 micropayments** — pay per request with USDC on Base, no API key needed
+- **Stripe metered billing** — traditional API key billing for teams
+- **Free tier** — no auth required, free models, rate-limited
+
+### Developer Experience
+- **Model aliases** — `"claude"`, `"gpt"`, `"gemini"`, `"deepseek"` instead of full model IDs
+- **OpenAI-compatible API** — drop-in replacement, same `/v1/chat/completions` format
+- **Streaming** — SSE streaming with routing metadata in the first chunk
+- **Usage tracking** — `GET /v1/usage` for per-key daily stats
 
 ## Quick Start
 
@@ -60,19 +94,20 @@ console.log(res.routing.complexity);// "MEDIUM"
 |---------|-------------|---------|
 | [`@arcrouter/sdk`](https://github.com/ArcRouterAI/arcrouter-sdk) | TypeScript SDK — routing, council, streaming, workflows, x402 | `pnpm add @arcrouter/sdk` |
 | [`arcrouter-classifier`](https://github.com/ArcRouterAI/arcrouter) | Open-source prompt classifier — topic, complexity, compression | `pnpm add arcrouter-classifier` |
-| [`arcrouter-mcp`](https://github.com/ArcRouterAI/arcrouter-mcp) | MCP server for AI coding tools | `claude mcp add arcrouter ...` |
+| [`arcrouter-mcp`](https://github.com/ArcRouterAI/arcrouter-mcp) | MCP server for AI coding tools (3 tools: chat, models, health) | `claude mcp add arcrouter ...` |
 | [awesome-arcrouter](https://github.com/ArcRouterAI/awesome-arcrouter) | Community integrations and resources | — |
 
 ## How It Works
 
 ```
-Prompt → Classify (topic + complexity) → Score 345+ models → Semantic rerank → Route to best model
+Prompt → Classify (topic + complexity + agentic) → Score 345+ models → Semantic rerank → Route → Fallback chain
 ```
 
-1. **Classify** — detect topic (code/math/science/writing/reasoning) and complexity (SIMPLE → REASONING)
-2. **Score** — rank models using real benchmarks (LiveBench, LiveCodeBench, HumanEval, GPQA)
-3. **Route** — hybrid semantic routing narrows to the optimal model for the task
-4. **Respond** — direct provider call with automatic failover and circuit breaking
+1. **Classify** — detect topic (24 categories), complexity (4 tiers), agentic intent, and confidence
+2. **Score** — rank models using real benchmarks, weighted by semantic relevance + value + reliability
+3. **Route** — hybrid semantic routing narrows to optimal model, filtered by budget + context length + cost
+4. **Respond** — direct provider call with circuit breaker, up to 3 fallback models on failure
+5. **Compress** — lossless prompt compression on long conversations (>5000 chars) to reduce token cost
 
 ## Links
 
