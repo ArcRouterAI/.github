@@ -51,9 +51,11 @@ LLMs vary wildly in quality by task. GPT-4o dominates coding, Gemini excels at l
 - **Model exclusion** — `exclude_models` to block specific models per request
 
 ### Payments
+- **MPP (Machine Payments Protocol)** — pay per request via USDC.e on Tempo. Sub-cent fees, 500ms finality. Standards-based RFC 7235 auth headers. Built by Tempo + Stripe. See [mpp.dev](https://mpp.dev).
 - **x402 micropayments** — pay per request with USDC on Base, no API key needed
 - **Stripe metered billing** — traditional API key billing for teams
 - **Free tier** — no auth required, free models, rate-limited
+- **Discovery endpoint** — `GET /openapi.json` advertises payment methods + pricing for agent auto-discovery
 
 ### Developer Experience
 - **Model aliases** — `"claude"`, `"gpt"`, `"gemini"`, `"deepseek"` instead of full model IDs
